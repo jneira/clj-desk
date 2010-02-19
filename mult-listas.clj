@@ -33,10 +33,10 @@
   (letfn [(pad0 [xs] (map concat xs (iterate #(cons 0 %1) '())))]
 	 (pad0 lst)))
 
+(defn lpad [xs x y] (concat (replicate x y) xs)) 
 (multList 2 '(5 6 7 8))
 (multList 1 '(5 6 7 8))
 (multLists '(5 6 7 8) '(1 2 3))
 (multDespl '((1 7 0 3 4) (1 1 3 5 6) (5 6 7 8)))
 (sumListCarry '(12 26 33))
-(cons sumListCarry '((8 6) (7 9)))
-(apply sumListCarry '((8 6)(7 9)))
+(lpad '(1 2 3) 2 0)
