@@ -19,24 +19,33 @@
      [d (cons r (acc 1))]))
 
 (defn sumListCarry [xs] 
-  (let [[x,xs] (reduce sumCarry [0 '()] xs)]
+  (let [[x,xs] (reduce sumCarry [0 '()] (reverse xs))]
        (if (zero? x) xs (flatten [x,xs]))))
 
 (defn multList [m lst]
-     (sumListCarry  (reverse (map #(* %1 m) lst))))
+     (sumListCarry (map #(* %1 m) lst)))
  
 (defn multLists [xs ys]
-     (let [mults (reduce #(cons (multList %2 xs) %1) '() ys)]
-       (sumListCarry (apply map + (multDespl mults)))))
+     (let [mults (multDespl 
+		  (reduce #(cons (multList %2 xs) %1) '() ys))
+	   max (apply maxLength mults)
+	   lpaded (map #(lpad %1 (- max (count %1)) 0) mults)]
+       (sumListCarry (apply map + lpaded))))
 
 (defn multDespl [lst] 
-  (letfn [(pad0 [xs] (map concat xs (iterate #(cons 0 %1) '())))]
+  (letfn [(pad0 [xs] (map concat xs 
+		     (iterate #(cons 0 %1) '())))]
 	 (pad0 lst)))
 
 (defn lpad [xs x y] (concat (replicate x y) xs)) 
-(multList 2 '(5 6 7 8))
-(multList 1 '(5 6 7 8))
-(multLists '(5 6 7 8) '(1 2 3))
+
+(defn maxLength [& rest] (apply max (map count rest)))
+
+
+(assert (= 11356 (listNum (multList 2 '(5 6 7 8)))))
+(assert (= 698394 (listNum (multLists '(5 6 7 8) '(1 2 3)))))
+(assert (= [2 '(8)] (sumCarry [5 []] 23)))
+(sumListCarry '(12 26 13))
 (multDespl '((1 7 0 3 4) (1 1 3 5 6) (5 6 7 8)))
-(sumListCarry '(12 26 33))
 (lpad '(1 2 3) 2 0)
+(maxLength '(1 2 3) '(1 2 3) '(2 3 4))
