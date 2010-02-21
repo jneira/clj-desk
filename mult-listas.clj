@@ -45,7 +45,7 @@
 (assert (= 11356 (listNum (multList 2 '(5 6 7 8)))))
 (assert (= 698394 (listNum (multLists '(5 6 7 8) '(1 2 3)))))
 (assert (= [2 '(8)] (sumCarry [5 []] 23)))
-(sumListCarry '(12 26 13))
+(assert (= (1 4 7 3) (sumListCarry '(12 26 13))
 (multDespl '((1 7 0 3 4) (1 1 3 5 6) (5 6 7 8)))
 (lpad '(1 2 3) 2 0)
 (maxLength '(1 2 3) '(1 2 3) '(2 3 4))
