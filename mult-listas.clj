@@ -14,21 +14,21 @@
 (assert (= 12345 (listNum '(1 2 3 4 5))))
 
 (defn sumCarry 
-  [acc x]
-   (let [s (+ x (acc 0)) [d r] (div s 10)]
-     [d (cons r (acc 1))]))
+  [acc x] (let [s (+ x (acc 0)) 
+		[d r] (div s 10)]
+	    [d (cons r (acc 1))]))
 
 (defn sumListCarry [xs] 
-  (let [[x,xs] (reduce sumCarry [0 '()] (reverse xs))]
+  (let [[x,xs] (reduce sumCarry [0 []] (reverse xs))]
        (if (zero? x) xs (flatten [x,xs]))))
 
-(assert (= [1 '(5)] (sumCarry [0 []] 15)))
-(assert (= [2 '(8)] (sumCarry [5 []] 23)))
-(assert (= '(1 4 7 3) (sumListCarry '(12 26 13))))
+(assert (= [1 '(5)] (sumCarry [0 ()] 15)))
+(assert (= [1 '(4 5)] (sumCarry [1 '(5)] 13)))
+(assert (= [1 '(2 4 5)] (sumCarry [1 '(4 5)] 11)))
+(assert (= '(1 2 4 5) (sumListCarry '(11 13 15))))
 
 (defn lpad [xs x y] (concat (replicate x y) xs)) 
 (defn maxLength [& lst] (apply max (map count lst)))
-(count '(1 2 3 4 5))
 
 (assert (= '(0 0 1 2 3 4) (lpad '(1 2 3 4) 2 0)))
 (assert (= 5 (maxLength '(1 2 3) '(1 2) '(1 2 3 4 5) '(1))))
