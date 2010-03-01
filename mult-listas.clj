@@ -1,5 +1,4 @@
-(ns mult-listas
-  (:use clojure.contrib.seq-utils)))
+(ns mult-listas)
 
 (defn div [x y] [(quot x y) (rem x y)])
 
@@ -33,19 +32,17 @@
 (assert (= '(0 0 1 2 3 4) (lpad '(1 2 3 4) 2 0)))
 (assert (= 5 (maxLength '(1 2 3) '(1 2) '(1 2 3 4 5) '(1))))
  
-(defn multDespl [lst] 
-  (letfn [(pad0 [xs] (map concat xs 
-		     (iterate #(cons 0 %1) '())))]
-	 (pad0 lst)))
+(defn multDespl [& lst] 
+  (map concat lst (iterate #(cons 0 %1) ())))
 
-(assert (= '((1 2 3) (1 2 0) (1 0 0)) (multDespl '((1 2 3) (1 2) (1)))))
+(assert (= '((1 2 3) (1 2 0) (1 0 0)) (multDespl '(1 2 3) '(1 2) '(1))))
 
 (defn multList [m lst]
      (listCarry (map #(* %1 m) lst)))
 
 (defn multLists [xs ys]
      (let [mults (reduce #(cons (multList %2 xs) %1) '() ys)
-	   despl (multDespl mults)
+	   despl (apply multDespl mults)
 	   max (apply maxLength despl)
 	   lpaded (map #(lpad %1 (- max (count %1)) 0) despl)]
        (listCarry (apply map + lpaded))))
