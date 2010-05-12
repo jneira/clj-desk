@@ -1,6 +1,7 @@
 (ns course
   [:use book-list clojure.contrib.seq-utils
-   [clojure.contrib.duck-streams :only (to-byte-array)]])
+   [clojure.contrib.duck-streams :only (to-byte-array)]]
+  [:require [clojure.contrib.str-utils2 :as s]])
 
 (defn print-book
   "Prints out information about a book."
@@ -201,10 +202,11 @@ is desired, ensure is the solution.)")
 
 (defn bs [file-name]
   (let [f (java.io.File. file-name)
-        v (vec (to-byte-array f))
-        end (dec (count v))
-        from (- end 128)]
-    (subvec v from end)))
+        v (to-byte-array f)
+        from (- (count v) 128)
+        cad (String. v from 126)]
+    (when (= (s/take cad 3) "TAG")
+      (partition 30 (s/drop cad 3)))))
 
 
 
