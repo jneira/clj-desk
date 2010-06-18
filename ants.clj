@@ -31,7 +31,7 @@
 (defstruct cell :food :pher) ;may also have :ant and :home
 
 ;world is a 2d vector of refs to cells
-(def world 
+(def world  
      (apply vector 
             (map (fn [_] 
                    (apply vector (map (fn [_] (ref (struct cell 0 0))) 

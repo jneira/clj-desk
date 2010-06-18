@@ -72,3 +72,13 @@
 
 (defn mapreduce [fnrd fnmap lst] 
   (apply (comp (partial reduce fnrd) (partial map fnmap)) (list lst) ))
+
+;;matchure example
+(use 'matchure)
+(defn-match fib
+  ([0] 1)
+  ([1] 1)
+  ([?n] (+ (fib (dec n)) (fib (dec (dec n))))))
+
+
+
