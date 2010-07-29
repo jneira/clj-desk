@@ -1,9 +1,6 @@
 (ns hashiwokakero
   (:require (clojure.contrib [combinatorics :as comb])))
 
-(defn assocn [coll coords newVal]
-  (reduce ) )
-
 (defn in-range? [vec coords]
   (boolean
    (reduce #(and
@@ -27,20 +24,23 @@
 (defonce directions
   {:north [0,-1] :east [1,0] :south [0,1] :west [-1,0]})
 
-(defstruct puzzle-node :panel :islands)
+(defstruct node :panel :islands)
 (defstruct coords :x :y)
 (defstruct bridge :direction :value)
 (defstruct island :coords :bridges)
 
+(defn get-val [panel coord]
+  (get-in panel [(:x coord) (:y coord)]))
+
 (defn init-panel [p]
   (let [with0 (map #(interpose 0 %1) p)
         length (count (first with0))] 
-    (interpose (replicate length 0) with0)))
+    (vec (map vec (interpose  (replicate length 0) with0)))))
 
 (defn init-islands [p]
   (for [x (range 0 (count p))
         y (range 0 (count (nth p x)))
-        :when (> (nthn p [x y]) 0)]
+        :when (> (get-in p [x y]) 0)]
     (struct island (struct coords x y))))
 
 (defn get-bridges
@@ -53,15 +53,22 @@
                 (map #(filter (complement zero?) %1)
                      (comb/selections (range 0 (inc maxByBridge)) 4)))))
 
-(defn valid-bridges? [panel island bridges]
-  nil)
+(defn init-root-node [p]
+  (let [panel (init-panel p)
+        islands (init-islands panel)]
+    (struct node panel islands)))
 
-(defn init-root-node [p k]
-  (let [panel (init-panel p)]))
+(defn move [coords direction]
+  (map + coords direction))
 
 (defn next-bridge-step [bridge cell]
   (let [dir (directions (:direction bridge))]
-    (map +  dir cell)))
+    (move cell dir)))
+
+(defn num-bridges [panel island]
+  (let [dirs (vals directions)
+        mv&get #(get-value panel (move island %1))
+        cells (map mv-get dirs)]))
 
 (defn fit-bridge [panel cell val]
   )
@@ -71,7 +78,7 @@
       [(step [prevCell]
              (let [val (:value bridge)
                    nextCell (next-bridge-step bridge prevCell)
-                   nextVal (get-in panel [(:x nextCell) (:y nextCell)])]
+                   nextVal (get-val panel nextCell)]
                (cond
                 ((complement in-range?) panel nextCell) :out-of-range
                 (< nextVal 0) (if (= cell prevCell)
@@ -85,7 +92,9 @@
                 (= nextVal 0) (recur nextCell))))]
     (step cell)))
 
+(defn valid-bridges? [panel island bridges]
+  nil)
 
 
-
+(def node (init-root-node [[0 2 0] [2 2 2] [0 2 0]]))
 
