@@ -1,8 +1,8 @@
 (ns hashiwokakero
   (:require (clojure.contrib [combinatorics :as comb])))
 
-(defn nthn [coll coords]
-  (reduce nth coll coords))
+(defn assocn [coll coords newVal]
+  (reduce ) )
 
 (defn in-range? [vec coords]
   (boolean
@@ -59,16 +59,33 @@
 (defn init-root-node [p k]
   (let [panel (init-panel p)]))
 
-(defn next-bridge-extend [bridge coords]
-  (let [dir (directions (direction bridge))]
-    (map + coords dir)))
+(defn next-bridge-step [bridge cell]
+  (let [dir (directions (:direction bridge))]
+    (map +  dir cell)))
+
+(defn fit-bridge [panel cell val]
+  )
 
 (defn extend-bridge [panel cell bridge]
   (letfn
-      (step [exts coord]
-            (let [dir (directions (direction bridge))
-                  nextCell (map + cell dir)
-                  nextVal (panel (:x cell) (:y cell))]
-              (cond
-               ((complement in-range?) p nextCell) [nil :out-of-range]
-               (< nextVal 0) (if ))))))
+      [(step [prevCell]
+             (let [val (:value bridge)
+                   nextCell (next-bridge-step bridge prevCell)
+                   nextVal (get-in panel [(:x nextCell) (:y nextCell)])]
+               (cond
+                ((complement in-range?) panel nextCell) :out-of-range
+                (< nextVal 0) (if (= cell prevCell)
+                                :cross-other-bridge
+                                (if (= nextVal val)
+                                  :match-prev-bridge
+                                  :mismatch-prev-bridge))
+                (> nextVal 0) (if (fit-bridge panel nextCell val)
+                                nextCell
+                                :island-full)
+                (= nextVal 0) (recur nextCell))))]
+    (step cell)))
+
+
+
+
+
