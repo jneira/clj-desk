@@ -29,8 +29,8 @@
 (defstruct bridge :direction :value)
 (defstruct island :coords :bridges)
 
-(defn get-val [panel coord]
-  (get-in panel [(:x coord) (:y coord)]))
+(defn get-value [panel {:keys [x y]}]
+  (get-in panel [x y]))
 
 (defn init-panel [p]
   (let [with0 (map #(interpose 0 %1) p)
@@ -58,17 +58,19 @@
         islands (init-islands panel)]
     (struct node panel islands)))
 
-(defn move [coords direction]
-  (map + coords direction))
+(defn move [{:keys [x y]} direction]
+  (let [dir (when (keyword? direction)
+               (directions direction))]
+    (apply struct coords (map + [x y] dir))))
 
 (defn next-bridge-step [bridge cell]
   (let [dir (directions (:direction bridge))]
     (move cell dir)))
 
 (defn num-bridges [panel island]
-  (let [dirs (vals directions)
-        mv&get #(get-value panel (move island %1))
-        cells (map mv-get dirs)]))
+  (let [mv&get #(get-value panel (move island %1))
+        cells (map mv&get directions)]
+    cells))
 
 (defn fit-bridge [panel cell val]
   )
