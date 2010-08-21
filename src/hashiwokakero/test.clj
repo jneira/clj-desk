@@ -7,6 +7,6 @@
 
 (def p (:panel mynode))
 (def iss (:islands mynode))
-(def is (last iss))
-(def c {:x 4 :y 12})
+(def is (first iss))
+(def c (:coords is))
 (def brs (:bridges is))

@@ -1,5 +1,7 @@
 (ns hashiwokakero.utilities)
 
+(defn transpose [matrix]
+  (when matrix (apply map vector matrix))) 
 (defn abs [n] (Math/abs n))
 (defn sum [seq] (apply + seq))
 (def º comp)
@@ -23,3 +25,4 @@
                               (list clause))
               clause))] 
     (cons `cond clauses->)))
+

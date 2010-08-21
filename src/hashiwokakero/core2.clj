@@ -56,7 +56,7 @@
   (map (¬ extend-bridge panel coords) bridges))
 
 (defn put-bridges [panel coords bridges] 
-  (let [exts (map butlast (extend-bridges panel coords bridges))
+  (let [exts (butlast (extend-bridges panel coords bridges))
         woutkeys (remove keyword? exts)
         laying (fn [p ext]
                  (assoc-in p (vals (ext 0)) (- (ext 1))))]
