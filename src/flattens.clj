@@ -17,14 +17,14 @@
 (defn flatten-ol2 [tree]
      (letfn [(rec [acc x]
         (if (not (seq? x))
-(concat acc [x])
-(reduce rec acc x)))]
-(lazy-seq (reduce rec () tree))))
+          (concat acc [x])
+          (reduce rec acc x)))]
+       (lazy-seq (reduce rec () tree))))
 
 ; from twitters cgrand and fogus
  (defn flatten-cgrand [s] (remove seq? (tree-seq seq? seq s)))
  (defn flatten-fogus [x] (if (seq? x)
-              (lazy-seq (apply concat (map flatten x)))(list x)))
+              (lazy-seq (apply concat (map flatten-fogus x)))(list x)))
 
 (def bigtree (for [x (range 1 500)] (cons (range 1 5) (range 1 1000))))
 

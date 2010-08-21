@@ -81,4 +81,9 @@
   ([?n] (+ (fib (dec n)) (fib (dec (dec n))))))
 
 
+(defn squared? [p]
+  (let [length (count p)
+        lengths (map count p)]
+    (apply = length lengths)))
+
 
