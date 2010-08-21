@@ -87,3 +87,11 @@
     (apply = length lengths)))
 
 
+(defn in-range? [vec coords]
+  (boolean
+   (reduce #(and
+             (vector? %1)
+             (> (count %1) %2)
+             (%1 %2))
+           vec coords)))
+
