@@ -29,13 +29,15 @@
 (defn get-bridges [panel coords]
   (let [move&get #(cell-value panel (move coords %1))
         cell-values (map move&get (keys DIRECTIONS))]
-    (remove #(or (nil? %1) (zero? %1)) cell-values)))
+    (remove nil? cell-values)))
 
 (defn left-bridges [panel coords]
-  (- (cell-value panel coords)
-     (abs (sum (get-bridges panel coords)))))
+  (let [val (cell-value panel coords)
+        sum-brs (abs (sum (get-bridges panel coords)))]
+    (- val sum-brs)))
 
 (defn fit-bridge? [panel coords bridge-val]
+  
   (let [rest-bridges
          (- (left-bridges panel coords)
             (abs bridge-val))]
@@ -44,10 +46,9 @@
 (defn row-from-cell [panel {:keys [x y]} direction]
   (let [[dx dy :as dir] (get-direction direction)
         hz? (zero? dx) rev? (some neg? dir)
-        row (if hz? (panel x)
-                (map #(get %1 y) panel))
+        [row aux] (if hz? [(panel x) y]
+                      [(map #(get %1 y) panel) x])
         rev (if rev? (reverse row) row)
-        aux (if hz? y x)
         from (if rev? (- (count rev) aux 1) aux)]
     (subvec (vec rev) from)))
 
@@ -60,56 +61,64 @@
         bridge (apply (comp vec concat) (take 3 part))]
     (indexed-row bridge cell direction)))
 
-(defn out-of-range? [way dest]
-  (or (empty? way) (<= dest 0)))
+;; validations on bridges
+(defn out-of-range?
+  [path dest]
+  (or (empty? path) (<= dest 0)))
 
-(defn prev-bridge? [way-vals]
-  (and (seq way-vals) (every? neg? way-vals)))
+(defn prev-bridge? [path-vals]
+  (and (seq path-vals) (every? neg? path-vals)))
 
-(defn prev-bridge-match? [way-vals bridge-value]
-  (and (prev-bridge? way-vals)
-       (= bridge-value (abs (first way-vals)))))
+(defn prev-bridge-match? [path-vals bridge-value]
+  (and (prev-bridge? path-vals)
+       (= bridge-value (abs (first path-vals)))))
 
-(defn free-way? [values dest]
-  (and ((comp not out-of-range?) values dest)
-       (every? zero? values)))
+(defn free-path? [path-vals dest]
+  (and ((comp not out-of-range?) path-vals dest)
+       (every? zero? path-vals)))
 
 (defn valid-bridge? [panel row br-val]
   (let [dest (last row)
-        way ((comp rest drop-last) row)
-        way-vals (map second way)]
-    (or (and (free-way? way-vals (second dest))
-             (fit-bridge? panel (first dest) br-val))
-        (prev-bridge-match? way-vals br-val))))
+        path ((comp rest drop-last) row)
+        path-vals (map second path)
+        free-path? (free-path? path-vals (second dest))
+        fit-bridge? (fit-bridge? panel (first dest) br-val)]
+    (and free-path? fit-bridge?)))
 
-(defn bridges-isolate-islands? [exts bridges num-islands]
+(defn bridges-isolate-islands?
+  [exts bridges num-islands]
   (and (>= (sum (map :value bridges))
            (sum (map (comp second last) exts)))
        (> (count exts) num-islands)))
 
+(defn get-path [panel coords
+               {:keys [direction value]}]
+  (let [path (inter-islands
+             panel coords direction)]
+    [path value]))
+
 (defn valid-bridges? [panel coords bridges]
-  (let [fgen #(inter-islands
-               panel coords (:direction %1))
-        pred #(prev-bridge-match?
-               ((comp rest drop-last) %1) %2)
-        exts (for [x bridges
-                   :let [y (fgen x) val (:value x)
-                         vals (map second y)]
-                   :when (not (pred vals val))]
-               [y val])
-        sum-bridges (sum (map second exts))]
-    (and (= (left-bridges panel coords) sum-bridges)
-         (every? #(valid-bridge?
-                   panel (%1 0) (%1 1)) exts))))
+  (let [prev? #(prev-bridge-match?
+                ((comp rest drop-last)
+                (map second (%1 0))) (%1 1))
+        exts (map (partial get-path panel coords)
+                  bridges)
+        exts (remove prev? exts)
+        sum-bridges (sum (map second exts))
+        fit-bridges? (= (left-bridges panel coords)
+                        sum-bridges)
+        all-valid? (every? #(valid-bridge?
+                             panel (%1 0) (%1 1)) exts)]
+    (and fit-bridges? all-valid?)))
 
 (comment not (bridges-isolate-islands?
               (map first exts)
               bridges (count-islands panel)))
 
 (defn extend-bridge [panel cell {:keys [direction value]}]
-  (let [way (inter-islands panel cell direction)]
+  (let [path (inter-islands panel cell direction)]
     (map #(vector (first %1) value)
-         ((comp rest butlast) way))))
+         ((comp rest butlast) path))))
 
 (defn extend-bridges [panel coords bridges]
   (map (partial extend-bridge panel coords) bridges))
@@ -134,7 +143,8 @@
 (defn init-panel [p]
   (let [with0 (map #(interpose 0 %1) p)
         length (count (first with0))] 
-    (vec (map vec (interpose (replicate length 0) with0)))))
+    (vec (map vec (interpose
+                   (replicate length 0) with0)))))
 
 (defn init-bridges [max-total max-by-bridge]
   (let [all (comb/selections (range 0 (inc max-by-bridge)) 4)
@@ -156,7 +166,7 @@
         [bridges (init-bridges (cell-value p coords) 2)
          valid (filter-bridges p coords bridges)
          sorted (sort-by count valid)]]
-  (struct Island coords sorted)))
+    (struct Island coords sorted)))
 
 (defn init-root-node [p]
   (let [panel (init-panel p)
@@ -190,8 +200,8 @@
      (if ((comp not valid-node?) node) []
          (let [islands (filter&sort-islands-bridges node)
                {:keys [coords bridges]} (first islands)
-               panels (map (partial put-bridges panel coords) bridges)]
-           (comment println (map pp-panel panels))
+               panels (map (partial put-bridges panel coords)
+                           bridges)]
            (map #(struct Node %1 (rest islands)) panels)))))
 
 (defn all-islands-bridged? [node]
@@ -202,7 +212,8 @@
     (zero? sum-all-bridges)))
 
 (defn solution? [node]
-  (and (empty? (:islands node)) (all-islands-bridged? node)))
+  (and (empty? (:islands node))
+       (all-islands-bridged? node)))
 
 (defn exploren [node n]
   (if (coll? n)
