@@ -11,7 +11,7 @@
   (and (seq? arg)) ((comp not empty?) arg))
 
 (defn backtracking [solution? explore node]
-  (if (solution? node) [node]
+   (if (solution? node) [node]
       (mapcat
        #(backtracking solution? explore %1)
        (explore node))))

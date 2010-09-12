@@ -1,5 +1,5 @@
 (ns hashiwokakero.pprint
-  (:use (hashiwokakero utilities core)))
+  (:use (hashiwokakero utilities)))
 
 (defn str-bridge [panel x y]
   (let [get-val #(or (get-in panel [x %1]) 0)
@@ -41,5 +41,7 @@
         1 "Puzzle with one solution"
         (str "Puzzle with " num-solutions " solutions")))
 
-(defn pprint-panel [panel]
+(defn pp-panel [panel]
   (dorun (map #(apply println %1) (str-panel panel))))
+
+(defn pp-node [node] (pp-panel (:panel node)))
