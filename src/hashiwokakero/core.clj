@@ -37,7 +37,6 @@
     (- val sum-brs)))
 
 (defn fit-bridge? [panel coords bridge-val]
-  
   (let [rest-bridges
          (- (left-bridges panel coords)
             (abs bridge-val))]

@@ -95,3 +95,7 @@
              (%1 %2))
            vec coords)))
 
+(defn ns-unmap-all
+"Unmap all the symbols (except 'ns' and 'in-ns')."
+([] (ns-unmap-all *ns*))
+([ns] (map #(ns-unmap ns %) (keys (ns-map ns)))))
