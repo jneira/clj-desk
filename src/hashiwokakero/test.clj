@@ -5,7 +5,7 @@
 
 (def mynode (init-root-node (puzzle 1)))
 
-(def step (first (exploren mynode [0 0 0 0 0 0 0 0 0 0 0 0])))
+(def step (first (exploren mynode [0 0 0 0 0 0 0 0 0 0])))
 
 (do 
   (def p (:panel step))
