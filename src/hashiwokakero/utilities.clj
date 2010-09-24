@@ -2,7 +2,7 @@
 
 (defn transpose [matrix]
   (when matrix (apply map vector matrix))) 
-(defn abs [n] (Math/abs n))
+(defn abs [n] (when n (Math/abs n)))
 (defn sum [seq] (apply + seq))
 (def º comp)
 (def ¬ partial)

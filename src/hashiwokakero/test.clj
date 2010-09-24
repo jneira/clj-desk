@@ -5,13 +5,17 @@
 
 (def mynode (init-root-node (puzzle 1)))
 
-(def step (first (exploren mynode [0 0 0 0 0 0 0 0 0 0])))
-
 (do 
+  (init-history)
+  (def steps (exploren mynode [])))
+
+(do
+  (def step (first steps))
   (def p (:panel step))
   (def iss (:islands step))
   (def is (first iss))
   (def c (:coords is))
   (def brs (:bridges is))
   (def br (first brs))
-  (pp-panel p))
+  (pp-panel p)
+  (count steps))
