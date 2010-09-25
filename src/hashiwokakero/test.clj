@@ -24,3 +24,6 @@
   (println "STEPS ************************")
   (dorun (map (comp println pp-node) steps))
   (println "steps" (count steps)))
+
+;; (time (dorun (map resolve-puzzle (take 40 puzzle))))
+;; "Elapsed time: 78206.390756 msecs" 1.3034398459333332 minutos
