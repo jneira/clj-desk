@@ -100,12 +100,14 @@
     (and free-path? fit-bridge?)))
 
 (defn bridges-isolate-islands?
-  [exts num-islands]
+  [exts num-islands left-bridges-origin]
   (let [sum-brs-vals (sum (map second exts))
         sum-dest-vals (sum
                        (map (comp last last first) exts))]
-      (and (>= sum-brs-vals sum-dest-vals)
-               (> (count exts) num-islands))))
+    (comment println left-bridges-origin sum-brs-vals sum-dest-vals)
+    (and (>= sum-brs-vals
+             (+ sum-dest-vals left-bridges-origin))
+         (< (count exts) num-islands))))
 
 (defn valid-bridges? [panel coords bridges]
   (let [prevs (filter (comp pos? :value)
@@ -116,8 +118,10 @@
         (fn [] (every? #(valid-bridge?
                           panel (%1 0) (%1 1)) (first exts)))
         isolates? #(bridges-isolate-islands?
-                    (apply concat exts) (count-islands panel))]
-    (comment println (fit?) (all-valid?) (isolates?))
+                    (apply concat exts)
+                    (count-islands panel)
+                    (left-bridges panel coords))]
+    (comment println (all-valid?)(isolates?) )
     (and (all-valid?) (not (isolates?)))))
 
 (defn fit-bridges? [panel coords bridges]
@@ -179,8 +183,9 @@
         :let
         [bridges (init-bridges (cell-value p coords) 2)
          valid (filter-bridges p coords bridges)
-         rm (remove empty? (map #(remove-bridges
-                                  [:north :west] %1) valid))]]
+         rm (remove empty?
+                    (set (map #(remove-bridges
+                                [:north :west] %1) valid)))]]
     (struct Island coords rm)))
 
 (defn init-root-node [p]
@@ -192,22 +197,30 @@
 (defn test-bridges [panel {:keys [coords bridges]}]
   (comment = (get-bridges-vals panel coords) ) true)
 
-(defn valid-node? [{:keys [panel islands]}]
-  (and  (no-empty-seq? islands)
-        (not-any? #(empty? (:bridges %1)) (butlast islands))))
+(defn valid-node? [{p :panel
+                    [{:keys [coords bridges]}
+                     & rest :as iss] :islands}]
+  (and (no-empty-seq? iss)
+       (or (not-empty bridges)
+           (zero? (left-bridges p coords)))))
+
+
 
 (defn remove-bridged-islands [p iss]
   (remove #(let [c (:coords %)]
              (zero? (left-bridges p c)))
           iss))
 
+(defn remove-unfit-bridges [panel coords brs]
+  (remove #(not (fit-bridges? panel coords %1)) brs))
+
 (defn filter-islands-bridges
   [{:keys [panel islands]}]
   (let [iss (remove-bridged-islands panel islands)
         [{:keys [coords bridges]} & rest]
-        (map (partial filter-island-bridges panel)
-             iss)]
-    (cons (struct Island coords bridges) rest)))
+        (map (partial filter-island-bridges panel) iss)
+        fitbrs (remove-unfit-bridges panel coords bridges)]
+    (cons (struct Island coords fitbrs) rest)))
 
 (def history (atom []))
 (defn init-history [] (swap! history (fn [_] [])))
@@ -231,7 +244,7 @@
     (zero? sum-all-bridges)))
 
 (defn solution? [node]
-  (and (empty? (:islands node))
+  (and (= (count (:islands node)) 1)
        (all-islands-bridged? node)))
 
 (defn exploren [node n]

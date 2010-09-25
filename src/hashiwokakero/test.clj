@@ -5,11 +5,15 @@
 
 (def mynode (init-root-node (puzzle 1)))
 
+(comment exploren mynode [0 1 1 0 0 0 0 0 0 1 0 1])
+
 (do 
   (init-history)
-  (def steps (exploren mynode [])))
+  (def steps (exploren mynode [0 1 1 0 0 0 0 0 0 1 0 1 0 0 0 0 0 0]))
+  (dorun (map (comp println pp-node) @history)))
 
 (do
+
   (def step (first steps))
   (def p (:panel step))
   (def iss (:islands step))
@@ -17,5 +21,6 @@
   (def c (:coords is))
   (def brs (:bridges is))
   (def br (first brs))
-  (pp-panel p)
-  (count steps))
+  (println "STEPS ************************")
+  (dorun (map (comp println pp-node) steps))
+  (println "steps" (count steps)))
