@@ -8,7 +8,7 @@
 (do 
   (init-history)
   (def steps (exploren mynode [0]))
-  (dorun (map (comp println pp-node) @history))
+  (dorun (map   pp-node @history))
   (println "steps" (count steps)))
 
 (do
@@ -21,7 +21,7 @@
   (def brs (:bridges is))
   (def br (first brs))
   (println "STEPS ************************")
-  (dorun (map (comp println pp-node) steps)))
+  (dorun (map pp-node steps)))
 
 ;; (time (dorun (map resolve-puzzle (take 40 puzzle))))
 ;; "Elapsed time: 78206.390756 msecs" 1.3034398459333332 minutos

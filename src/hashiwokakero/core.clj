@@ -175,13 +175,9 @@
         sorted (sort-by (comp count :bridges) islands)]
     (struct Node panel sorted)))
 
-(defn test-bridges [panel {:keys [coords bridges]}]
-  (comment = (get-bridges panel coords) ) true)
-
 (defn valid-node? [{:keys [panel islands]}]
   (and (no-empty-seq? islands)
-       (every? (comp no-empty-seq? :bridges) islands)
-       (every? (partial test-bridges panel) islands)))
+       (every? (comp no-empty-seq? :bridges) islands)))
 
 (defn filter&sort-islands-bridges
   [{:keys [panel islands]}]
