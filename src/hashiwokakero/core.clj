@@ -81,7 +81,6 @@
        (= bridge-value (abs (first path-vals)))))
 
 (defn free-path? [path-vals dest]
-  
   (and ((comp not out-of-range?) path-vals dest)
        (every? zero? path-vals)))
 
@@ -104,10 +103,10 @@
   (let [sum-brs-vals (sum (map second exts))
         sum-dest-vals (sum
                        (map (comp last last first) exts))]
-    (comment println left-bridges-origin sum-brs-vals sum-dest-vals)
-    (and (>= sum-brs-vals
-             (+ sum-dest-vals left-bridges-origin))
-         (< (count exts) num-islands))))
+    (comment println sum-brs-vals sum-dest-vals  left-bridges-origin
+             "\n" num-islands (count exts))
+    (and (>= sum-brs-vals (+ sum-dest-vals left-bridges-origin))
+         (<= (count exts) num-islands))))
 
 (defn valid-bridges? [panel coords bridges]
   (let [prevs (filter (comp pos? :value)
@@ -204,8 +203,6 @@
        (or (not-empty bridges)
            (zero? (left-bridges p coords)))))
 
-
-
 (defn remove-bridged-islands [p iss]
   (remove #(let [c (:coords %)]
              (zero? (left-bridges p c)))
@@ -223,7 +220,7 @@
     (cons (struct Island coords fitbrs) rest)))
 
 (def history (atom []))
-(defn init-history [] (swap! history (fn [_] [])))
+(defn init-history [] (swap! history empty))
 
 (defn explore
   ([vnodes n] (explore ((vec vnodes) n))) 
