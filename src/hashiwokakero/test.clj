@@ -7,7 +7,7 @@
 
 (do 
   (init-history)
-  (def steps (exploren mynode [0 1 1 0 0 0 0 0 0 1 0 1]))
+  (def steps (exploren mynode [0]))
   (dorun (map (comp println pp-node) @history))
   (println "steps" (count steps)))
 
