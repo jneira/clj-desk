@@ -189,7 +189,9 @@
     sorted))
 
 (def history (atom []))
+
 (defn init-history [] (swap! history empty))
+
 (defn explore
   ([vnodes n] (explore ((vec vnodes) n))) 
   ([{:keys [panel islands] :as node}]

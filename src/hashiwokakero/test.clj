@@ -7,7 +7,7 @@
 
 (do 
   (init-history)
-  (def steps (exploren mynode [0]))
+  (def steps (exploren mynode [0 0 0]))
   (dorun (map   pp-node @history))
   (println "steps" (count steps)))
 
@@ -25,3 +25,5 @@
 
 ;; (time (dorun (map resolve-puzzle (take 40 puzzle))))
 ;; "Elapsed time: 78206.390756 msecs" 1.3034398459333332 minutos
+;; (time (dorun (map resolve-puzzle (subvec puzzle 40 50))))
+;; "Elapsed time: 146647.332203 msecs" 2.4441222033833334 minutos
