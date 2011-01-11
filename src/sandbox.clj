@@ -158,3 +158,10 @@ element and another seed to creates a lazy seq. The seq is stopped the grow func
    (partition-by second
      (map vector coll
        (rest (reductions #(if (f %2) (inc %1) %1) 0 coll)))))) 
+
+(defn depth [lst]
+  (if (seq? lst)
+    (if (empty? lst) 1
+        (inc (apply max (map depth lst))))
+    0))
+
