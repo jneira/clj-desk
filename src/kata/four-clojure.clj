@@ -229,12 +229,16 @@
            #(zero? (mod n %))
            (range 1 (inc (quot n 2)))))))
 
+(defn to-list- [num]
+  (->> num
+       (iterate #(quot % 10))
+       (take-while #(not= 0%))
+       (map #(mod % 10))))
+
 (defn happy-num? [n]
   (let [s (fn [x]
-            (->> x
-                 (iterate #(quot % 10))
-                 (take-while #(not= 0%))
-                 (map (comp #(* % %) #(mod % 10)))
+            (->> x to-list-
+                 (map #(* % %))
                  (apply +)))]
     (= 1 (some #{1 4} (iterate s n)))))
     
@@ -349,7 +353,7 @@
   #(map (comp read-string str) (str (* %1 %2))))
 
 ;; Problem 108
-(def lazy-searching [& xs]
+(defn lazy-searching [& xs]
   (let [fs (map first xs)]
     (if (apply = fs) (first xs)
         )))
@@ -357,7 +361,7 @@
 ;; Problem 100
 (def gcd )
 
-(def lcm [& xs])
+(def lcm)
 
 ;; Problem 101
 
@@ -374,11 +378,92 @@
        (lev-dist t y))
     (max (count x) (count y))))
 
-x 3 2 1 1 2 2
+(comment
+  " x 3 2 1 1 2 2
 
-y 2 1 0 1 2 3
+  y 2 1 0 1 2 3
+  
+  x 1 0 1 2 3 4
+    
+  # 0 1 2 3 4 5
+  # x y y y x"
+)
 
-x 1 0 1 2 3 4
+;; Problem 120
 
-# 0 1 2 3 4 5
-  # x y y y x
+(def sum-square-digits 
+  #(reduce
+    (fn [a c] (if (< c (sum-square c)) (inc a) a))
+    0 %))
+
+(defn sum-square [x]
+  (apply + (map #(->> % str Integer. ((fn [x] (* x x)))) (str x))))
+
+;; Problem 128
+
+(def card->map
+  (fn [[s r]]
+    {:suit (case s \D :diamond \H :heart
+                 \C :club \S :spades)
+     :rank ((zipmap "23456789TJQKA" (range 13)) r)}))
+
+(defn lcm [& xs]
+  (ffirst
+   (filter #(apply = %)
+           (iterate
+            #(map-indexed
+              (fn [i x] (if (= (apply min %) x)
+                          (+ x (nth xs i)) x)) %)
+            xs))))
+
+(defn lcm1
+  ([x y]
+      (letfn [(gcd [x y] (if (= 0 y) x (gcd y (mod x y))))]
+        (/ (* x y) (gcd x y))))
+  ([x y z & r] (apply lcm1 (lcm1 x y) (lcm1 x z) r)))
+
+;; amcnamara's solution:
+
+(defn lcm2 [a & b]
+  (loop [i a]
+    (if (every? #(zero? (mod i %)) b)
+      i
+      (recur (+ i a)))))
+
+;; Problem 147
+
+(defn pascal [x]
+  (iterate (fn
+             ([[h & s :as a]] 
+                  (concat [h] (when s (map + a s)) [(last a)])))
+           (map bigint x)))
+
+(defn pascal1 [[h & s :as a]]
+  (lazy-cat [a] (pascal1
+                 (concat [h]
+                         (when s (map #(+ (bigint %) %2) + a s))
+                         [(last a)]))))
+
+(defn pascal2
+  ([x] [[x] [x x]])
+  ([x & y :as a] (let [r (concat [x] (map + a y) [(last a)])]
+                   (lazy-cat [r] (pascal2 r)))))
+
+(defn row [side position]
+  (let [sq (* side side)]
+    (loop [result 0 limit side]
+      (if (< position limit)
+        result
+        (if (< limit sq)
+          (recur (inc result) (+ limit side))
+          result)))))
+
+(defn row2 [side pos]
+  (if (= 1 side) 0
+      (quot pos side)))
+
+(defn col [side position]
+   (nth (cycle (range side)) position))
+
+(defn col2 [side pos]
+   (rem pos side))l

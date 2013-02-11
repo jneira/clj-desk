@@ -193,6 +193,10 @@ element and another seed to creates a lazy seq. The seq is stopped the grow func
 
 (defn tails [xs]
   (take-while seq (iterate rest xs)))
+
+(defn inits [xs]
+  (take-while seq (iterate butlast xs)))
+
 (defn pairs [xs]
   (mapcat (fn [[x & y]] (map list (repeat x) y))
           (tails xs)))
@@ -223,6 +227,37 @@ element and another seed to creates a lazy seq. The seq is stopped the grow func
                     (= (:lastname %) "doe")) emps)
   ()))
 
+(defn diff [& xs]
+  (->> (map frequencies xs)
+       (apply merge-with
+              #(- (max %1 %2) (min %1 %2)))
+       (mapcat (fn [[k v]] (repeat v k)))))
+
+(def xs [1,2,2,3,4,5,7])
+(def ys [2,3,4,5,5,6,7])
+(diff xs ys)
+;; ({1 1, 2 2, 3 1, 4 1, 5 1, 7 1}
+;; {2 1, 3 1, 4 1, 5 2, 6 1, 7 1})
 
 
+(defn bell [n]
+  (loop [n n s [1] b s]
+    (println n s b)
+    (if (= n 1)
+      b
+      (recur (dec n)
+             (reduce #(conj % (+ %2 (last %))) [(last s)] s)
+             (conj b (last s))))))
 
+(def bell
+  (cons 1
+        (map last 
+             (iterate
+              (fn [xs]
+                (reduce #(conj % (+ %2 (last %)))
+                        [(last xs)] xs))
+              [1]))))
+
+
+(defn concating [xs]
+  (reduce #(concat %2 (list %)) (reverse xs)))

@@ -33,4 +33,12 @@
          5 "buzz"
          52 "buzz"
          15 "fizzbuzz"
-         35 "fizzbuzz"))
+         35 "fizzbuzz")
+         53 "fizzbuzz")
+
+(defn fizzbuzz [n]
+  (let [m #(= 0 (mod % %2))
+        e #(some #{%2} (str %))
+        r #(str (when (or (m % 3) (e % \3)) "fizz")
+                (when (or (m % 5) (e % \5)) "buzz"))]
+    (map #(if (seq (r %)) (r %) %) (range 1 n))))
