@@ -56,6 +56,17 @@
                   (apply componer fs) xs)]
          (f1 res)))))
 
+(defn test-comp [f]
+  (= "HELLO" ((f #(.toUpperCase %) #(apply str %) take) 5 "hello world")))
+
+(def comp-redux
+  (fn c ([f] f) ([f & g] #(f (apply (apply c g) %&)))))
+
+;; from https://twitter.com/ghoseb/status/417733795605778433
+(def comp2 #(reduce
+             (fn [f g] (fn [& xs] (f (apply g xs))))
+             %&))
+
 ;; http://4clojure.com/problem/59
 (defn juxt [& fs] (fn [& args] (for [f fs] (apply f args))))
 
@@ -391,14 +402,13 @@
 
 ;; Problem 120
 
+(defn sum-square [x]
+  (apply + (map #(->> % str Integer. ((fn [x] (* x x)))) (str x))))
+
 (def sum-square-digits 
   #(reduce
     (fn [a c] (if (< c (sum-square c)) (inc a) a))
     0 %))
-
-(defn sum-square [x]
-  (apply + (map #(->> % str Integer. ((fn [x] (* x x)))) (str x))))
-
 ;; Problem 128
 
 (def card->map
@@ -446,7 +456,7 @@
 
 (defn pascal2
   ([x] [[x] [x x]])
-  ([x & y :as a] (let [r (concat [x] (map + a y) [(last a)])]
+  ([x & y] (let [r (concat [x] (map + (cons x y) y) [(last y)])]
                    (lazy-cat [r] (pascal2 r)))))
 
 (defn row [side position]
@@ -466,4 +476,114 @@
    (nth (cycle (range side)) position))
 
 (defn col2 [side pos]
-   (rem pos side))l
+   (rem pos side))
+;; Problem 158
+
+(def curried1
+  (fn [a]
+    (fn [b]
+      (fn [c]
+        (fn [d]
+          (+ a b c d))))))
+
+;; Problem 148
+
+(defn big-divide-2 [n a b]
+  (+ (apply + (range 0 n a))
+     (apply + (range 0 n b))
+     (apply - (range 0 n (* a b)))))
+
+(defn big-divide [n a b]
+  (let [f #(let [x (quot (- n 1) %)]
+             (*' % (*' x (+ x 1)) 1/2))]
+    (+ (f a) (f b) (- (f (* a b))))))
+
+;; Problem 150
+
+(defn capicua [n]
+  (let [is (map str (range 0 10))
+        iss [is (map str is is)]
+        f #(for [i is j %]  (str i j i))]
+    (remove #(and (not= % "0") (.startsWith % "0"))
+     (drop-while #(> n (Integer. %))
+                 (flatten (iterate (fn [[x y]]
+                                     [(f x) (f y)])
+                                   iss))))))
+
+(defn digits [n]
+  (loop [i 1]
+    (if (= 0.0 (quot n (Math/pow 10 i))) i (recur (+ 1 i)))))
+
+(defn digit [n i] (int (quot (mod n (bigint (Math/pow 10 i)))
+                             (bigint (Math/pow 10 (- i 1))))))
+
+(defn nines [n d]
+  (- (quot d 2) (if (odd? d) -1 0)
+     (loop [i (+ 1 (quot d 2)) acc 0]
+       (if (and (<= i d) (= 9 (digit n i)))
+         (recur (+ i 1) (+ acc 1))
+         acc))))
+
+(defn is-cap [n]
+  (let [ds (for [i (range 1 (+ 1 (digits n)))] (digit n i))]
+   (= ds (reverse ds))))
+
+(defn next-cap [n]
+  (let [d (digits n) h (quot d 2)
+        h9 (= 9 (digit n (+ h 1)))
+        h (if h9 (nines n d) h)
+        n2 (+ n (Math/pow 10 h))] 
+    (bigint (if (and (odd? d) (not h9)) n2
+                (if (and h9 (= 0 h)) (+ 2 n)
+                    (+ n2 (Math/pow 10 (- h 1))))))))
+
+(defn next-cap-n [n]
+  (let [ds (digits n)
+        h (quot ds 2)]
+    (loop [i ds acc 0]
+      (+ (* (Math/pow 10 i)
+            (digit (if (> i h) i (- ds i))))
+         ()))))
+
+(defn capicua2 [z]
+  (map bigint (drop-while #(> z %)
+                          (iterate next-cap (next-cap-n z)))))
+
+(def capicua3 (fn [z]
+  (let [p #(Math/pow 10 %)
+        digits (fn [n]
+                 (loop [i 1]
+                   (if (= 0.0 (quot n (p i))) i (recur (+ 1 i)))))
+        digit (fn [n i] (quot (mod n (bigint (p i)))
+                               (bigint (p (- i 1)))))
+        nines (fn [n d] (- (quot d 2)
+                          (if (odd? d) -1 0)
+                          (loop [i (+ 1 (quot d 2)) acc 0]
+                            (if (and (<= i d) (= 9 (digit n i)))
+                              (recur (+ i 1) (+ acc 1)) acc))))
+        next-cap (fn [n] 
+                   (let [d (digits n) h (quot d 2)
+                         h9 (= 9 (digit n (+ h 1)))
+                         h (if h9 (nines n d) h)
+                         n2 (+ n (p h))] 
+                     (bigint (if (and (odd? d) (not h9)) n2
+                                 (if (and h9 (= 0 h)) (+ 2 n)
+                                     (+ n2 (p (- h 1))))))))
+        next-cap (fn [n]
+                 (let [ds (for [i (range 1 (+ 1 (digits n)))] (digit n i))]
+                   (= ds (reverse ds))))
+        next-cap-n (fn [n]
+                     (loop [i n] (if (is-cap i) i (recur (inc i)))))]
+    (iterate next-cap (next-cap-n z)))))
+
+#_(define-generator (palindromes)
+  (do ((k 0 (+ k 1))) ((= k 10))
+    (yield k))
+  (do ((i 1 (* i 10))) (#f)
+    (do ((j i (+ j 1))) ((= j (* 10 i)))
+      (let ((ds (digits j)))
+        (yield (undigits (append ds (reverse ds))))))
+    (do ((j i (+ j 1))) ((= j (* 10 i)))
+      (let ((ds (digits j)))
+        (do ((k 0 (+ k 1))) ((= k 10))
+          (yield (undigits (append ds (list k) (reverse ds)))))))))
