@@ -13,6 +13,10 @@
         (recur (int (/ decimal-value lang-radix))
                (concat [(nth lang (mod decimal-value lang-radix))] lang-num))))))
 
+(def)
+
+
+
 (defn digit-index
   [digit lang]
   (loop [i 0]
