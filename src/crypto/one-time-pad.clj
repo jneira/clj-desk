@@ -12,4 +12,17 @@
 
 (def cypher-text (apply str cypher-texts))
 
+(defn xor-all [ss]
+  (letfn [(rec [[n & ns]]
+            (when ns
+              (concat [(for [m ns] (map bit-xor n m))]
+                      (rec ns))))]
+    (rec  (map vig/hexStrToNums ss))))
+
+(defn is-xor-with-spc [n]
+  (and (>= n 64) (< n 128)))
+
+(defn idx-with-spc? [ns]
+  (keep identity (map-indexed #(when (is-xor-with-spc %2)  %1) ns)))
+
 (def key-length 31)
