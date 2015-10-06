@@ -57,8 +57,8 @@
   (let [keyc (cycle key)
         nums (hexStrToNums s)]
     (app-str (map (comp char bit-xor) nums keyc))))
-(defn break [s]
-  (let [n (key-length s)
-        key (guess-bytes s n)]
-    (decode s key)))
+(defn break
+  ([s] (break s (key-length s)))
+  ([s n] (let [key (guess-bytes s n)]
+           (decode s key))))
 (defn solution [] (break cypher-text))
