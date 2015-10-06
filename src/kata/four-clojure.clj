@@ -349,36 +349,32 @@
   #(map (comp read-string str) (str (* %1 %2))))
 
 ;; Problem 108
-(def lazy-searching [& xs]
+(defn lazy-searching [& xs]
   (let [fs (map first xs)]
     (if (apply = fs) (first xs)
         )))
 
 ;; Problem 100
-(def gcd )
 
-(def lcm [& xs])
 
 ;; Problem 101
-
-(defn dist [c1 c2]
-  (if (and c1 c2 (= c1 c2)) 0 1))
-
-(defn lev-dist [x y]
-  (apply + (map dist x y)))
 
 (defn lev-dist [[h & t :as x]
                 [i & s :as y]]
   (if (and x y)
-    (+ (if (= h i) 0 1)
-       (lev-dist t y))
-    (max (count x) (count y))))
+    (if (= h i) (lev-dist t s)
+        (+ 1 (min (lev-dist x s)
+                  (lev-dist t y)
+                  (lev-dist t s))))
+    (count (or x y))))
 
-x 3 2 1 1 2 2
+;; problem 82(defn dist1 [[h & t :as x]
 
-y 2 1 0 1 2 3
+(defn word-chains [ws]
+  (iterate (fn [[wss,ws]]
+             )
+           [(map vector ws,ws)]))
 
-x 1 0 1 2 3 4
 
-# 0 1 2 3 4 5
-  # x y y y x
+
+
