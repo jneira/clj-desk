@@ -1,5 +1,5 @@
 (ns crypto.one-time-pad
-  (require [crypto.vigenere :as vig]))
+   (:use [crypto.core]))
 
 (def cypher-texts
   ["BB3A65F6F0034FA957F6A767699CE7FABA855AFB4F2B520AEAD612944A801E",
@@ -17,12 +17,36 @@
             (when ns
               (concat [(for [m ns] (map bit-xor n m))]
                       (rec ns))))]
-    (rec  (map vig/hexStrToNums ss))))
+    (rec  (map hexStrToNums ss))))
 
-(defn is-xor-with-spc [n]
+(defn is-xor-with-spc? [n]
   (and (>= n 64) (< n 128)))
 
-(defn idx-with-spc? [ns]
-  (keep identity (map-indexed #(when (is-xor-with-spc %2)  %1) ns)))
+(defn idxs-with-spc [ns]
+  (remove nil?
+          (map-indexed #(when (is-xor-with-spc? %2)  %1) ns)))
 
-(def key-length 31)
+(defn all-idxs-with-spc [xa]
+  (let [count-spc
+        (fn [i] (->> xa (map (comp #(some #{i} %) idxs-with-spc))
+                    (remove nil?) count))]
+    (filter #(> (count-spc %) 1) (range 0 known-key-length))))
+
+(defn get-chars [xa idx]
+  (map #(char (bit-xor % 32))
+       (map #(nth % idx) xa)))
+
+(defn is-lwc-or-spc [ch]
+  (or (is-letter? (int ch)) (= 32 (int ch))))
+
+(defn guess-chars [nss]
+  (let [xas (xor-all nss)
+        idxss (map all-idxs-with-spc xas)]
+    (for [idxs idxss i (range 0 (count idxss))
+          :let [xa (nth xas i)]]
+      [i (for [idx idxs
+               :let [chrs (get-chars xa idx)]
+               :when (every? is-lwc-or-spc chrs)]
+           [idx chrs])])))
+
+(def known-key-length 31)
