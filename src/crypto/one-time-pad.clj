@@ -10,6 +10,8 @@
    "A6726DE8F01A50E849EDBC6C7C9CF2B2A88E19FD423E0647ECCB04DD4C9D1E",
    "BC7570BBBF1D46E85AF9AA6C7A9CEFA9E9825CFD5E3A0047F7CD009305A71E"])
 
+(def known-key-length 31)
+
 (def cypher-text (apply str cypher-texts))
 
 (defn xor-all [ss]
@@ -42,11 +44,12 @@
 (defn guess-chars [nss]
   (let [xas (xor-all nss)
         idxss (map all-idxs-with-spc xas)]
-    (for [idxs idxss i (range 0 (count idxss))
-          :let [xa (nth xas i)]]
-      [i (for [idx idxs
-               :let [chrs (get-chars xa idx)]
-               :when (every? is-lwc-or-spc chrs)]
-           [idx chrs])])))
+    (map-indexed
+     (fn [i idxs]
+       (let [xa (nth xas i)]
+         [i (for [idx idxs
+                  :let [chrs (get-chars xa idx)]
+                  :when (every? is-lwc-or-spc chrs)]
+              [idx chrs])])) idxss)))
 
-(def known-key-length 31)
+
