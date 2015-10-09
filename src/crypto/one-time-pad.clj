@@ -1,5 +1,5 @@
 (ns crypto.one-time-pad
-   (:use [crypto.core]))
+   (:require [crypto.core :as crypto]))
 
 (def cypher-texts
   ["BB3A65F6F0034FA957F6A767699CE7FABA855AFB4F2B520AEAD612944A801E",
@@ -19,7 +19,7 @@
             (when ns
               (concat [(for [m ns] (map bit-xor n m))]
                       (rec ns))))]
-    (rec  (map hexStrToNums ss))))
+    (rec  (map crypto/hexStrToNums ss))))
 
 (defn is-xor-with-spc? [n]
   (and (>= n 64) (< n 128)))
@@ -35,21 +35,41 @@
     (filter #(> (count-spc %) 1) (range 0 known-key-length))))
 
 (defn get-chars [xa idx]
-  (map #(char (bit-xor % 32))
-       (map #(nth % idx) xa)))
+  (cons \space (map #(char (bit-xor % 32))
+                    (map #(nth % idx) xa))))
 
 (defn is-lwc-or-spc [ch]
-  (or (is-letter? (int ch)) (= 32 (int ch))))
+  (or (crypto/is-letter? (int ch)) (= 32 (int ch))))
 
 (defn guess-chars [nss]
   (let [xas (xor-all nss)
         idxss (map all-idxs-with-spc xas)]
-    (map-indexed
-     (fn [i idxs]
-       (let [xa (nth xas i)]
-         [i (for [idx idxs
-                  :let [chrs (get-chars xa idx)]
-                  :when (every? is-lwc-or-spc chrs)]
-              [idx chrs])])) idxss)))
+    (into {}
+          (map-indexed
+           (fn [i idxs]
+             (let [xa (nth xas i)]
+               [i (into {}
+                        (for [idx idxs
+                              :let [chrs (vec (get-chars xa idx))]
+                              :when (every? is-lwc-or-spc chrs)]
+                          [idx chrs]))])) idxss))))
+(defn get-guessed-chars [chrs i j]
+  (set (for [k (range 0 (count chrs))
+             :let [di (- i k)
+                   ch (get-in chrs [k j di])]
+             :while (>= di 0)
+             :when ch] ch)))
 
+(defn in-range [agchs j i ch]
+  (let [gchs (get-guessed-chars agchs i j)]
+    (and (is-lwc-or-spc ch)
+         (or (empty? gchs) (gchs ch)))))
+
+(defn stream-in-range? [agchs j ithcs]
+   (map-indexed (partial in-range agchs j) ithcs))
+
+(defn solution []
+  (let [agchs (guess-chars cypher-texts)]
+     (crypto/break #(stream-in-range? agchs %2 %3)
+                  cypher-text known-key-length)))
 
