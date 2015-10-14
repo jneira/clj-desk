@@ -60,16 +60,21 @@
              :while (>= di 0)
              :when ch] ch)))
 
-(defn in-range [agchs j i ch]
-  (let [gchs (get-guessed-chars agchs i j)]
-    (and (is-lwc-or-spc ch)
-         (or (empty? gchs) (gchs ch)))))
+(defn in-range? [agchs j i ch]
+  (let [gchs (get-guessed-chars agchs i j)
+        in (and (is-lwc-or-spc ch)
+                (or (empty? gchs) (gchs ch)))]
+    in))
 
 (defn stream-in-range? [agchs j ithcs]
-   (map-indexed (partial in-range agchs j) ithcs))
+  (when (= 1 j) (println ithcs))
+  (every? identity  (map-indexed (partial in-range? agchs j) ithcs)))
 
-(defn solution []
-  (let [agchs (guess-chars cypher-texts)]
-     (crypto/break #(stream-in-range? agchs %2 %3)
-                  cypher-text known-key-length)))
+(defn solution
+  ([] (solution cypher-texts))
+  ([cts]
+      (let [agchs (guess-chars cts)]
+        (crypto/break #(stream-in-range? agchs %2 %3)
+                      (apply str cts) known-key-length))))
 
+;; follow

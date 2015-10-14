@@ -52,7 +52,6 @@
 (def is-lwc #(Character/isLowerCase %))
 
 (defn lwc-freqs [s]
-  (prn "lwc-freqs")
   (let [lws (filter is-lwc s)
         c (count lws)
         pq #(* (/ (english-lwc-freqs %1) 100) (/ %2 c))]
@@ -77,7 +76,7 @@
 (defn decode [s key]
   (let [keyc (cycle key)
         nums (hexStrToNums s)]
-    (app-str (map (comp char bit-xor) nums keyc))))
+    (app-str (map #(char (if (and %1 %2) (bit-xor %1 %2) 0)) nums keyc))))
 
 (defn break
   ([s n] (break #(stream-in-range? %3) s n))
